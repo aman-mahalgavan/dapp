@@ -1,40 +1,54 @@
 import React, { Component } from 'react';
 import './App.css';
-import Web3 from 'web3';
 import { Button, Card } from '@material-ui/core';
-
-const providerFromWbe3 = Web3.givenProvider;
-const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+import web3Object from './web3/index';
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      allAccounts: []
-    }
-  }
-  getAccounts = () => {
-    web3.eth.getAccounts().then((accounts) => {
-      console.log("Accounts --> ", accounts);
-      console.log("Providers --> ", providerFromWbe3);
-      this.setState({ allAccounts: accounts });
+	constructor(props) {
+		super(props);
+		this.state = {
+			allAccounts: [],
+			ifNotMetaMask: true
+		}
+	}
 
-    });
-  }
-  render() {
-    return (
-      <div className="App">
-        <pre>
-          {`All Accounts --> ` + JSON.stringify(this.state.allAccounts)}
-        </pre>
-        <Card>
-          <Button onClick={this.getAccounts}>
-            GET ALL ACCOUNTS
-            			</Button>
+	componentDidMount = () => {
+		console.log("Our Web3 Object --> ", web3Object);
+		if(web3Object.GlobalWeb3Object){
+			console.log("Found Web3");
+			this.setState({ ifNotMetaMask: false });
+		}else{
+			console.log("No Web3");
+			this.setState({ ifNotMetaMask: true });
+		}
+	}
+
+	fetchAccounts = async () => {
+		let userAccounts = await web3Object.getAccounts();
+		console.log("Found Accounts -> ", userAccounts);
+		this.setState({ allAccounts: userAccounts });
+	}
+
+	render() {
+		return (
+			<div className="App">
+				<pre>
+					{`All Accounts --> ` + JSON.stringify(this.state.allAccounts)}
+				</pre>
+				<pre>
+					{`State --> ` + JSON.stringify(this.state)}
+				</pre>
+				<Card>
+					<Button onClick={this.fetchAccounts}>
+						GET ALL ACCOUNTS
+          </Button>
+				</Card>
+				<Card hidden={!this.state.ifNotMetaMask}>
+					No web3 found. Please consider using MetaMask and refresh the page!
         </Card>
-      </div>
-    );
-  }
+			</div>
+		);
+	}
 }
 
 export default App;
